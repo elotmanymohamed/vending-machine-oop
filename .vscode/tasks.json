@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Vending Machine",
+      "type": "shell",
+      "command": "g++",
+      "args": [
+    "-std=c++17",
+    "-Wall",
+    "-Ivending_machine/include",
+    "vending_machine/src/Motor.cpp",
+    "vending_machine/src/Slot.cpp",
+    "vending_machine/src/Automat.cpp",
+    "vending_machine/src/VendingMachine.cpp",
+    "vending_machine/src/main.cpp",
+    "-o",
+    "vending_machine.exe"
+]
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snack Vending Machine — FA1 POO C++</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0f0f13;
+      --bg2:      #16161e;
+      --bg3:      #1e1e2e;
+      --surface:  #252535;
+      --border:   #2e2e42;
+      --accent:   #7c3aed;
+      --accent2:  #06b6d4;
+      --green:    #10b981;
+      --red:      #ef4444;
+      --yellow:   #f59e0b;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --font:     'Space Grotesk', sans-serif;
+      --mono:     'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header p {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    /* ── Main layout ── */
+    .machine-wrapper {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    /* ── Machine panel ── */
+    .machine-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .machine-title {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* Display */
+    .display {
+      background: #0a0a0a;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      min-height: 60px;
+    }
+    .display-amount {
+      color: var(--green);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .display-msg {
+      color: var(--accent2);
+      font-size: 0.78rem;
+      margin-top: 4px;
+    }
+
+    /* Coin buttons */
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 12px 0 8px;
+    }
+
+    .coin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .coin-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--yellow);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 8px 4px;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+    }
+    .coin-btn:hover {
+      background: var(--border);
+      border-color: var(--yellow);
+      transform: scale(1.04);
+    }
+
+    /* Action buttons */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-primary   { background: var(--accent);  color: white; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger    { background: var(--red);     color: white; }
+    .btn-success   { background: var(--green);   color: white; }
+    .btn:hover     { opacity: .88; transform: translateY(-1px); }
+    .btn-full      { grid-column: 1/-1; }
+
+    /* Slot keypad */
+    .slot-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .slot-input-row input {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      outline: none;
+    }
+    .slot-input-row input:focus { border-color: var(--accent); }
+
+    /* ── Right panel ── */
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Slot grid */
+    .slots-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      flex: 1;
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .slot-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all .15s;
+      position: relative;
+    }
+    .slot-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .slot-card.selected {
+      border-color: var(--accent);
+      background: rgba(124,58,237,.12);
+    }
+    .slot-card.empty {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .slot-id {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+    .slot-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin: 4px 0 2px;
+    }
+    .slot-price {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent2);
+    }
+    .slot-stock {
+      font-size: 0.65rem;
+      margin-top: 4px;
+    }
+    .stock-ok   { color: var(--green); }
+    .stock-low  { color: var(--yellow); }
+    .stock-empty{ color: var(--red); }
+
+    /* Log panel */
+    .log-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+    }
+    .log-title {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .log-body {
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      max-height: 160px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .log-ok     { color: var(--green); }
+    .log-err    { color: var(--red); }
+    .log-info   { color: var(--accent2); }
+    .log-motor  { color: var(--yellow); }
+
+    /* Tray */
+    .tray {
+      background: var(--bg3);
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .3s;
+    }
+    .tray.has-product {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(16,185,129,.08);
+      font-weight: 600;
+    }
+
+    /* Animations */
+    @keyframes drop { 0%{transform:translateY(-20px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+    .dropping { animation: drop .4s ease forwards; }
+
+    @media (max-width: 700px) {
+      .machine-wrapper { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🍟 Snack Vending Machine</h1>
+  <p>Mini Projet POO C++ · FA1 2024/2025 · Mohamed El Otmany · FST Errachidia</p>
+</header>
+
+<div class="machine-wrapper">
+
+  <!-- ── Machine Panel ── -->
+  <div class="machine-panel">
+    <div class="machine-title">Panneau de contrôle</div>
+
+    <!-- Display -->
+    <div class="display">
+      <div class="display-amount" id="display-amount">0.00 €</div>
+      <div class="display-msg" id="display-msg">Insérez des pièces pour commencer</div>
+    </div>
+
+    <!-- Coins -->
+    <div class="section-label">Insérer une pièce (€)</div>
+    <div class="coin-grid" id="coin-grid">
+      <button class="coin-btn" onclick="insertCoin(5)">0.05</button>
+      <button class="coin-btn" onclick="insertCoin(10)">0.10</button>
+      <button class="coin-btn" onclick="insertCoin(20)">0.20</button>
+      <button class="coin-btn" onclick="insertCoin(50)">0.50</button>
+      <button class="coin-btn" onclick="insertCoin(100)">1.00</button>
+      <button class="coin-btn" onclick="insertCoin(200)">2.00</button>
+    </div>
+
+    <!-- Slot selector -->
+    <div class="section-label">Sélection emplacement</div>
+    <div class="slot-input-row">
+      <input type="number" id="slot-input" placeholder="N° emplacement" min="0">
+      <button class="btn btn-primary" onclick="selectProduct()">OK</button>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-grid">
+      <button class="btn btn-danger" onclick="cancelTransaction()">✕ Annuler</button>
+      <button class="btn btn-secondary" onclick="adminFillAll()">⟳ Recharger</button>
+    </div>
+
+    <!-- Tray -->
+    <div class="section-label">Bac de sortie (Product Tray)</div>
+    <div class="tray" id="tray">Bac vide</div>
+  </div>
+
+  <!-- ── Right Panel ── -->
+  <div class="right-panel">
+
+    <!-- Slots Grid -->
+    <div class="slots-panel">
+      <div class="machine-title">Emplacements — Inventaire</div>
+      <div class="slots-grid" id="slots-grid"></div>
+    </div>
+
+    <!-- Log -->
+    <div class="log-panel">
+      <div class="log-title">Console système</div>
+      <div class="log-body" id="log"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// =============================================================================
+// State — simule l'état du distributeur (reflète la logique C++)
+// =============================================================================
+
+const MAX_PER_SLOT = 5;
+
+const SLOTS_DATA = [
+  // Rangée 1 — double moteur (fentes larges)
+  { id:30, name:'Cheetos',   price:150, motor1:1,  motor2:2,  stock:5 },
+  { id:32, name:'Lays',      price:130, motor1:3,  motor2:4,  stock:5 },
+  { id:34, name:'Tams',      price:120, motor1:5,  motor2:6,  stock:5 },
+  { id:36, name:'Doritos',   price:140, motor1:7,  motor2:8,  stock:5 },
+  { id:38, name:'Doritos X', price:150, motor1:9,  motor2:10, stock:5 },
+  // Rangée 2 — simple moteur (fentes étroites)
+  { id:40, name:'M&Ms',      price:100, motor1:11, motor2:0,  stock:5 },
+  { id:41, name:'Oreo',      price:120, motor1:12, motor2:0,  stock:5 },
+  { id:42, name:'KitKat',    price:130, motor1:13, motor2:0,  stock:5 },
+  { id:43, name:'Bounty',    price:140, motor1:14, motor2:0,  stock:5 },
+  { id:44, name:'Snickers',  price:150, motor1:15, motor2:0,  stock:5 },
+  { id:46, name:'Twix',      price:150, motor1:16, motor2:0,  stock:5 },
+  { id:47, name:'Mars',      price:140, motor1:17, motor2:0,  stock:5 },
+  { id:48, name:'Milka',     price:160, motor1:18, motor2:0,  stock:5 },
+  { id:49, name:'Nuts',      price:130, motor1:19, motor2:0,  stock:5 },
+];
+
+let state = {
+  inserted:     0,
+  selectedSlot: null,
+  slots:        JSON.parse(JSON.stringify(SLOTS_DATA)),
+  trayProduct:  null,
+};
+
+// =============================================================================
+// Affichage
+// =============================================================================
+
+function fmt(cents) {
+  return (cents / 100).toFixed(2) + ' €';
+}
+
+function updateDisplay(msg = null) {
+  document.getElementById('display-amount').textContent = fmt(state.inserted);
+  if (msg) document.getElementById('display-msg').textContent = msg;
+}
+
+function log(msg, cls = 'log-info') {
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = cls;
+  const ts = new Date().toLocaleTimeString('fr-FR');
+  line.textContent = `[${ts}] ${msg}`;
+  el.prepend(line);
+}
+
+function renderSlots() {
+  const grid = document.getElementById('slots-grid');
+  grid.innerHTML = '';
+  state.slots.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'slot-card' +
+      (s.stock === 0 ? ' empty' : '') +
+      (state.selectedSlot === s.id ? ' selected' : '');
+    card.onclick = () => {
+      if (s.stock > 0) {
+        state.selectedSlot = s.id;
+        document.getElementById('slot-input').value = s.id;
+        renderSlots();
+        updateDisplay(`Slot ${s.id} — ${s.name} — ${fmt(s.price)}`);
+      }
+    };
+
+    const stockClass = s.stock === 0 ? 'stock-empty' :
+                       s.stock <= 2  ? 'stock-low' : 'stock-ok';
+    const motors = s.motor2 ? `M${s.motor1}+M${s.motor2}` : `M${s.motor1}`;
+
+    card.innerHTML = `
+      <div class="slot-id">#${s.id} · ${motors}</div>
+      <div class="slot-name">${s.name}</div>
+      <div class="slot-price">${fmt(s.price)}</div>
+      <div class="slot-stock ${stockClass}">
+        ${s.stock > 0 ? '▪'.repeat(s.stock) + ` ${s.stock}/${MAX_PER_SLOT}` : '✘ Épuisé'}
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function updateTray(product) {
+  const tray = document.getElementById('tray');
+  if (product) {
+    tray.textContent = `🎉 ${product} dans le bac !`;
+    tray.classList.add('has-product', 'dropping');
+    setTimeout(() => {
+      tray.classList.remove('dropping');
+      setTimeout(() => {
+        tray.textContent = 'Bac vide';
+        tray.classList.remove('has-product');
+        state.trayProduct = null;
+      }, 3000);
+    }, 400);
+  }
+}
+
+// =============================================================================
+// Actions
+// =============================================================================
+
+function insertCoin(cents) {
+  state.inserted += cents;
+  updateDisplay(`Pièce de ${fmt(cents)} insérée`);
+  log(`Pièce insérée : ${fmt(cents)} — Total : ${fmt(state.inserted)}`, 'log-ok');
+}
+
+function selectProduct() {
+  const slotId = parseInt(document.getElementById('slot-input').value);
+  const slot   = state.slots.find(s => s.id === slotId);
+
+  if (!slot) {
+    updateDisplay(`Emplacement ${slotId} introuvable`);
+    log(`Emplacement ${slotId} non trouvé`, 'log-err');
+    return;
+  }
+
+  if (state.inserted === 0) {
+    updateDisplay('Insérez des pièces d\'abord');
+    log('Aucun montant inséré', 'log-err');
+    return;
+  }
+
+  if (slot.stock === 0) {
+    updateDisplay(`${slot.name} — Épuisé`);
+    log(`Emplacement ${slotId} vide`, 'log-err');
+    return;
+  }
+
+  if (state.inserted < slot.price) {
+    const manque = slot.price - state.inserted;
+    updateDisplay(`Insuffisant — Manque ${fmt(manque)}`);
+    log(`Solde insuffisant — manque ${fmt(manque)}`, 'log-err');
+    return;
+  }
+
+  // ── Éjection ──
+  log('[INFRAROUGE] Vérification bac de sortie... OK', 'log-motor');
+  log(`[MOTEUR ${slot.motor1}] Activé — rotation 360°`, 'log-motor');
+  if (slot.motor2) {
+    log(`[MOTEUR ${slot.motor2}] Activé — rotation 360°`, 'log-motor');
+  }
+
+  slot.stock--;
+  const change = state.inserted - slot.price;
+  state.inserted = 0;
+
+  updateDisplay(`✔ ${slot.name} éjecté — Monnaie : ${fmt(change)}`);
+  log(`✔ ${slot.name} livré depuis l'emplacement ${slotId}`, 'log-ok');
+  if (change > 0) log(`Monnaie rendue : ${fmt(change)}`, 'log-ok');
+
+  updateTray(slot.name);
+  state.selectedSlot = null;
+  renderSlots();
+}
+
+function cancelTransaction() {
+  if (state.inserted === 0) {
+    log('Aucun montant à rembourser', 'log-info');
+    return;
+  }
+  log(`Transaction annulée — Remboursement : ${fmt(state.inserted)}`, 'log-ok');
+  state.inserted = 0;
+  state.selectedSlot = null;
+  updateDisplay('Transaction annulée');
+  renderSlots();
+}
+
+function adminFillAll() {
+  state.slots.forEach(s => s.stock = MAX_PER_SLOT);
+  log('Tous les emplacements rechargés (admin)', 'log-ok');
+  updateDisplay('Rechargement complet');
+  renderSlots();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderSlots();
+updateDisplay();
+log('Machine initialisée — ' + state.slots.length + ' emplacements chargés', 'log-ok');
+log('Mohamed El Otmany · FST Errachidia FA1 2024/2025', 'log-info');
+</script>
+</body>
+</html>
